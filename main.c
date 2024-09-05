@@ -94,11 +94,11 @@ void insereNaoCheioArvoreB(ArvB* arvore, int k){
 
     if(arvore->folha){ // se o nó for folha
         while(i >= 0 && k < arvore->chave[i]){ // enquanto não chegar na última chave e o número a ser inserido for menor que o buscado
-            arvore->chave[i+1] = arvore->chave[i]; // a próxima chave vai receber a atual
+            arvore->chave[i+1] = arvore->chave[i]; // faz o deslocamento das chaves para a direita
             i = i - 1; // estamos percorrendo as chaves de trás para frente
         }
         
-        arvore->chave[i+1] = k; // o valor a ser inserido vai sendo copiado na próxima chave
+        arvore->chave[i+1] = k; // insere a nova chave
         arvore->n = arvore->n+1; // estamos aumentando a quantidade de chaves presentes no nó;
         escrita(arvore); // função em binário para escrever em binário a árvore atual
     }else{ // se o nó NÃO for folha
@@ -106,18 +106,35 @@ void insereNaoCheioArvoreB(ArvB* arvore, int k){
             i--;
 
         }
-        i++;
+
+        i++; // corrige o valor do "i" após a iteração
         leitura(arvore->filho[i]); // função para ler, em binário, o filho do nó
-        if(arvore->filho[i]->n == 2*t-1){ // se a quantidade de chaves do nó for igual a 2t-1, ou seja, o máximo permitido
-            splitChildArvoreB(arvore, i); // faz um split do nó
+
+        if(arvore->filho[i]->n == 2*t-1){ // se a quantidade de chaves do nó for igual a 2t-1, ou seja, verifica se o nó filho está cheio
+            splitChildrenArvoreB(arvore, i); // se está cheio, faz a divisão do nó (split)
+            
             if(k > arvore->chave[i]){
-                i++;
+                i++; // se a chave inserida for maior que a chave do nó pai, faz o ajuste do "i" para apontar para o filho correto
             }
 
-            insereNaoCheioArvoreB(arvore->filho[i], k); // vai para o próximo nó na inserção
+            insereNaoCheioArvoreB(arvore->filho[i], k); // faz recursivamente a inserção no nó filho até que ele não esteja mais cheio
         }
 
     }
 
     return;
+}
+
+void insereArvoreB(ArvB* arvore, int k){ // k é a chave a ser inserida
+    if(arvore->n == 2*t-1){ // se o nó já estiver com a quantidade máxima de chaves permitidas
+        ArvB* s = (ArvB*) malloc(sizeof(ArvB));
+        s->folha = false; // o novo nó vai ser uma um nó raiz
+        s->n = 0; // inicializa sem nenhuma chave
+        s->filho[0] = arvore; // o filho de "s" vai ser a própria árvore original
+        splitChildrenArvoreB(s,0); // faz a divisão do nó raiz para poder inserir futuramente
+        insereNaoCheioArvoreB(s, k); // insere a chave k no novo nó
+    }else{
+        insereNaoCheioArvoreB(arvore, k); // caso esteja vazio, insere direto na folha
+    }
+
 }
