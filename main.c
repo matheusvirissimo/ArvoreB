@@ -12,6 +12,20 @@ typedef struct no{
     struct no *filho[MAX+1] // apontando para o próximo
 } ArvB;
 
+typedef struct btree{
+    ArvB* raiz;
+} BTree;
+
+
+// criar nó na árvore
+ArvB* criarNoArvoreB(BTree* T){
+    ArvB* x = (ArvB*) malloc(sizeof(ArvB)); // aloca no 
+    x->folha = true; // o nó é folha
+    x->n = 0; // inicia sem nenhuma chave
+    escrever(x); // escreve no disco binário
+    T->raiz = x; // o novo nó vai ser a raiz
+    return x; // retorna o novo nó
+}
 
 
 // Fazendo a busca normal
@@ -37,7 +51,6 @@ ArvB* buscaArvoreB(ArvB* arvore, int numeroBuscado){ // k é a chave que buscamo
 }
 
 // split de um nó;
-
 void splitChildrenArvoreB(ArvB* arvore, int i){
 
 }
@@ -50,11 +63,11 @@ void insereNaoCheioArvoreB(ArvB* arvore, int k){
         while(i >= 0 && k < arvore->chave[i]){ // enquanto não chegar na última chave e o número a ser inserido for menor que o buscado
             arvore->chave[i+1] = arvore->chave[i]; // a próxima chave vai receber a atual
             i = i - 1; // estamos percorrendo as chaves de trás para frente
-
         }
-            arvore->chave[i+1] = k; // o valor a ser inserido vai sendo copiado na próxima chave
-            arvore->n = arvore->n+1; // estamos aumentando a quantidade de chaves presentes no nó;
-            escrita(arvore); // função em binário para escrever em binário a árvore atual
+        
+        arvore->chave[i+1] = k; // o valor a ser inserido vai sendo copiado na próxima chave
+        arvore->n = arvore->n+1; // estamos aumentando a quantidade de chaves presentes no nó;
+        escrita(arvore); // função em binário para escrever em binário a árvore atual
     }else{ // se o nó NÃO for folha
         while(i >= 0 && k < arvore->chave[i]){ // enquanto não chegar no começo e o número inserido for menor que a chave atual
             i--;
