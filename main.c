@@ -72,6 +72,12 @@ void splitChildrenArvoreB(ArvB* arvore, int i){
         arvore->filho[j+1] - arvore->filho[j];
     }
 
+    arvore->filho[i+1] = z; // o filho do nó a direita vai receber a parte z do nó
+
+    for(int j = arvore->n; j >= i; j--){ // fazer a movimentação da direita para a esquerda dos nós
+        arvore->chave[j+1] = arvore->chave[j]; // a próxima chave recebe a anterior
+    }
+
     arvore->chave[i] = y->chave[t]; // a mediana das chaves sobe para o nó-pai
     arvore->n = arvore->n + 1; // o número de chaves em x aumenta em 1
 
