@@ -46,40 +46,41 @@ ArvB* buscaArvoreB(ArvB* arvore, int numeroBuscado){ // k é a chave que buscamo
 }
 
 // split de um nó;
-void splitChildrenArvoreB(ArvB* arvore, int i){
+void splitChildrenArvoreB(ArvB* arvore, int i){ // recebe como parâmetro o nó a ser dividido e em qual chave isso irá acontecer
     ArvB* z = (ArvB*) malloc(sizeof(ArvB)); // aloca memória para o nó z;
     // ArvB* y = (ArvB*) malloc(sizeof(ArvB)); não precisa dar malloc no "z" porque dá vazamento de memória se fizer isso
 
-    ArvB* y = arvore->filho[i]; // y vai ser o i-ésimo filho desse nó
-    z->folha = y->folha; // z vai receber se y é folha (ou não)
+    ArvB* y = arvore->filho[i]; // y vai ser o i-ésimo filho desse nó, ou seja, o nó que será dividido
+    z->folha = y->folha; // z vai receber de y se ele é folha (ou não)
 
-    z->n = t - 1; // a quantidade de  chaves de z será t-1 (por que?)
+    z->n = t - 1; // DEFINE A QUANTIDADE DE CHAVES PRESENTES NO NÓ. z terá t-1 chaves (metade das chaves de y)
 
-    for(int j = 0; j <= t - 1; j++){ // enquanto não alcançarmos o mínimo de chaves possíveis
-        z->chave[j] = y->chave[j+t]; // as chaves de "z" serão as últimas t-1 chaves de y
+    for(int j = 0; j <= t - 1; j++){ // copia as últimas t-1 chaves de y para z (agora os novos nós possuem a mesma quantidade de chaves)
+        z->chave[j] = y->chave[j+t]; // atribui as últimas chaves de "y" a "z", separnado o nó "y"
     }
 
-    if(y->folha == false){ // se "y" não for folha
-        for(int j = 0; j <= t; j++){ // enquanto j não for t
-            z->filho[j] = y->filho[j+t]; // "z" vai receber os filhos de "y" em ordem crescente
+    if(y->folha == false){ // se "y" não for folha, ele é um nó interno
+        for(int j = 0; j <= t; j++){ // copia os filhos de "y" a partir de j+t para "z"
+            z->filho[j] = y->filho[j+t]; // atribui os filhos correspondentes de "y" para "z"
         }
     }
 
-    y->n = t-1; // "y" terá a quantidade mínima de chaves possíveis
+    y->n = t-1; // reduz o número de chaves, pois elas já foram divididas entre "y" e "z"
     
-    // agora fazemos o split da direita
-    for(int j = (arvore->n + 1); j >= i + 1; j--){ // enquanto não alcançarmos o começo da chave
-        arvore->filho[j+1] - arvore->filho[j];
+    // Agora ajusta os ponteiros do filho do nó pai
+    for(int j = (arvore->n + 1); j >= i + 1; j--){ // move os ponteiros dos filhos da árvore uma posição a direita, pois deve abrir-se espaço para o novo nó z
+        arvore->filho[j+1] = arvore->filho[j]; // reajusta os filhos da árvore movendo para a direita
     }
 
-    arvore->filho[i+1] = z; // o filho do nó a direita vai receber a parte z do nó
+    arvore->filho[i+1] = z; // coloca como o filho i+1 da árvore, ou seja, é o filho da direita
 
-    for(int j = arvore->n; j >= i; j--){ // fazer a movimentação da direita para a esquerda dos nós
-        arvore->chave[j+1] = arvore->chave[j]; // a próxima chave recebe a anterior
+    // fazer a movimentação das chaves para incluir a mediana do nó cheio no nó pai (árvore)
+    for(int j = arvore->n; j >= i; j--){ // faz a movimentação chaves uma posição à direita, abrindo espaço para a nova chave
+        arvore->chave[j+1] = arvore->chave[j]; // a próxima chave recebe a anterior, fazendo deslocamento
     }
 
     arvore->chave[i] = y->chave[t]; // a mediana das chaves sobe para o nó-pai
-    arvore->n = arvore->n + 1; // o número de chaves em x aumenta em 1
+    arvore->n = arvore->n + 1; // o número de chaves em x aumenta em 1 (inclusão da chave do filho que foi pro pai)
 
     escrever(arvore);
     escrever(y);
