@@ -22,8 +22,11 @@ void escreverBinario(ArvB *arvore, char nome){
         return;
     }
 
-    int quantidadeRegistros = fwrite(arvore, sizeof(ArvB), 0, file);
-    printf("Foram escritos %d nos na arvore!\n", quantidadeRegistros);
+    fwrite(&arvore->n, sizeof(int), 1, file); // escrever a quantidade de chaves
+    fwrite(&arvore->folha, sizeof(bool), 1, file); // escrever se é chave
+    fwrite(&arvore->chave, sizeof(int), arvore->n, file); // escrever as chaves 
+    // frwite(&arvore->filho, sizeof(ArvB), ?, file);
+
     fclose(file);
 }
 
