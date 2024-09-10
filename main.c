@@ -11,6 +11,41 @@ typedef struct no{
     struct no *filho[MAX+1] // apontando para o próximo
 } ArvB;
 
+// Funções binárias
+void escreverBinario(ArvB *arvore){
+    FILE *file;
+    file = fopen("arvore.dat", "wb");
+    if(file == NULL){
+        printf("O arquivo nao foi aberto ;(\n");
+        return;
+    }
+
+    int quantidadeRegistros = fwrite(arvore, sizeof(ArvB), 0, file);
+    printf("Foram escritos %d nos na arvore!\n", quantidadeRegistros);
+    fclose(file);
+}
+
+void lerBinario(ArvB *arvore){
+    FILE *file;
+    file = fopen("teste.dat", "rb");
+    if(file == NULL){
+        printf("O arquivo nao foi aberto ;(\n");
+        return;
+    }
+
+    // mostrar o tamanho total do arquivo
+    fseek(file, 0, SEEK_END);
+    int tamArquivo = ftell(file)/sizeof(ArvB); 
+    rewind(file); // volta o ponteiro pro inicio
+
+    int quantidadeRegistrosLidos;
+    quantidadeRegistrosLidos = fread(arvore, sizeof(ArvB), tamArquivo, file);
+    printf("\nForam lidos %d nons na arvore\n", quantidadeRegistrosLidos);
+    fclose(file);
+    return; 
+}
+// Funções da árvore B
+
 
 // criar nó na árvore
 ArvB* criarNoArvoreB(ArvB** raiz){
