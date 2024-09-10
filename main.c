@@ -1,6 +1,8 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <time.h>
 
 #define MAX 10
 #define t 2 // o "t" é dinâmico. Por enquanto só testes. "T" é um valor de controle para quantidades de chaves
@@ -12,9 +14,9 @@ typedef struct no{
 } ArvB;
 
 // Funções binárias
-void escreverBinario(ArvB *arvore){
+void escreverBinario(ArvB *arvore, char nome){
     FILE *file;
-    file = fopen("arvore.dat", "wb");
+    file = fopen(nome, "wb");
     if(file == NULL){
         printf("O arquivo nao foi aberto ;(\n");
         return;
@@ -44,6 +46,31 @@ void lerBinario(ArvB *arvore){
     fclose(file);
     return; 
 }
+
+// Gerar um nome aleatório para cada nó
+char* gerarNomeBinarioAleatorio() {
+    // possui 16 espaços (0 ao 15)
+    char name[20];  
+
+    for(int i = 0; i < 15; i++){
+        // Gera um número aleatório entre 0 e 25 (26 letras no alfabeto)
+        int posicaoAleatoria = rand() % 26;
+
+        // Fica seprando entre maiúscula e minúscula
+        int maiusculaMinuscula = rand() % 2;
+ 
+        if(maiusculaMinuscula == 0){
+            name[i] = 'A' + posicaoAleatoria;
+        }else{
+            name[i] = 'a' + posicaoAleatoria;
+        }
+    }
+
+    name[15] = "\0";
+    strcat(name, ".dat");
+    return name;
+}
+
 // Funções da árvore B
 
 
