@@ -6,17 +6,19 @@
 
 #define MAX 10
 #define t 2 // o "t" é dinâmico. Por enquanto só testes. "T" é um valor de controle para quantidades de chaves
+
 typedef struct no{
     int n; // quantidade de chaves
     int chave[MAX]; // números contidos na chaves
     bool folha; // se é folha
-    struct no *filho[MAX+1] // apontando para o próximo
+    struct no *filho[MAX+1]; // apontando para o próximo
+    char name[20];
 } ArvB;
 
 // Funções binárias
-void escreverBinario(ArvB *arvore, char nome){
+void escreverBinario(ArvB *arvore){
     FILE *file;
-    file = fopen(nome, "wb");
+    file = fopen(arvore->name, "wb");
     if(file == NULL){
         printf("O arquivo nao foi aberto ;(\n");
         return;
@@ -25,6 +27,7 @@ void escreverBinario(ArvB *arvore, char nome){
     fwrite(&arvore->n, sizeof(int), 1, file); // escrever a quantidade de chaves
     fwrite(&arvore->folha, sizeof(bool), 1, file); // escrever se é chave
     fwrite(&arvore->chave, sizeof(int), arvore->n, file); // escrever as chaves 
+    fwrite(&arvore->name, sizeof(char), 20, file); // escrever o nome que o nó recebe. ele tem 20 porque são 20 caracteres 
     // frwite(&arvore->filho, sizeof(ArvB), ?, file);
 
     fclose(file);
@@ -32,7 +35,7 @@ void escreverBinario(ArvB *arvore, char nome){
 
 void lerBinario(ArvB *arvore){
     FILE *file;
-    file = fopen("teste.dat", "rb");
+    file = fopen(arvore->name, "rb");
     if(file == NULL){
         printf("O arquivo nao foi aberto ;(\n");
         return;
@@ -46,6 +49,11 @@ void lerBinario(ArvB *arvore){
     int quantidadeRegistrosLidos;
     quantidadeRegistrosLidos = fread(arvore, sizeof(ArvB), tamArquivo, file);
     printf("\nForam lidos %d nons na arvore\n", quantidadeRegistrosLidos);
+    fread(&arvore->n, sizeof(int), 1, file); // Lê a quantidade de chaves
+    fread(&arvore->folha, sizeof(bool), 1, file); // Lê se é folha
+    fread(arvore->chave, sizeof(int), arvore->n, file); // Lê as chaves
+    fread(arvore->name, sizeof(char), 20, file); // Lê o nome
+
     fclose(file);
     return; 
 }
@@ -82,7 +90,8 @@ ArvB* criarNoArvoreB(ArvB** raiz){
     ArvB* x = (ArvB*) malloc(sizeof(ArvB)); // aloca no 
     x->folha = true; // o nó é folha
     x->n = 0; // inicia sem nenhuma chave
-    escrever(x); // escreve no disco binário
+    strcpy(x->name, gerarNomeBinarioAleatorio()); // gera um novo nome para o nó
+    escreverBinario(x); // escreve no disco binário
     *raiz = x; // o novo nó vai ser a raiz
     return x; // retorna o novo nó
 }
@@ -92,12 +101,12 @@ ArvB* criarNoArvoreB(ArvB** raiz){
 ArvB* buscaArvoreB(ArvB* arvore, int numeroBuscado){ // k é a chave que buscamos. O tipo é ArvB porque vamos retornar o nó
     int i = 0; // está igual a 1, mas é 0
 
-    while(i <= arvore->n && numeroBuscado > arvore->chave[i]){ 
+    while(i < arvore->n && numeroBuscado > arvore->chave[i]){ // tem que ser < e não <= porque é 0 e não 1
         // enquanto "i" não for maior que a quantidade de elementos e o número buscado não for maior que o número analisado (está ordenado)
         i++;
     }
 
-    if(i <= arvore->n && numeroBuscado == arvore->chave[i]){
+    if(i < arvore->n && numeroBuscado == arvore->chave[i]){
         // se o numeroBuscado for igual o da chave
         return arvore->chave[i]; // retornamos o valor da chave, pois encontramos o valor
     }
@@ -120,12 +129,12 @@ void splitChildrenArvoreB(ArvB* arvore, int i){ // recebe como parâmetro o nó 
 
     z->n = t - 1; // DEFINE A QUANTIDADE DE CHAVES PRESENTES NO NÓ. z terá t-1 chaves (metade das chaves de y)
 
-    for(int j = 0; j <= t - 1; j++){ // copia as últimas t-1 chaves de y para z (agora os novos nós possuem a mesma quantidade de chaves)
+    for(int j = 0; j < t - 1; j++){ // copia as últimas t-1 chaves de y para z (agora os novos nós possuem a mesma quantidade de chaves)
         z->chave[j] = y->chave[j+t]; // atribui as últimas chaves de "y" a "z", separnado o nó "y"
     }
 
     if(y->folha == false){ // se "y" não for folha, ele é um nó interno
-        for(int j = 0; j <= t; j++){ // copia os filhos de "y" a partir de j+t para "z"
+        for(int j = 0; j < t; j++){ // copia os filhos de "y" a partir de j+t para "z"
             z->filho[j] = y->filho[j+t]; // atribui os filhos correspondentes de "y" para "z"
         }
     }
@@ -147,9 +156,9 @@ void splitChildrenArvoreB(ArvB* arvore, int i){ // recebe como parâmetro o nó 
     arvore->chave[i] = y->chave[t]; // a mediana das chaves sobe para o nó-pai
     arvore->n = arvore->n + 1; // o número de chaves em x aumenta em 1 (inclusão da chave do filho que foi pro pai)
 
-    escrever(arvore);
-    escrever(y);
-    escrever(z);
+    escreverBinario(arvore);
+    escreverBinario(y);
+    escreverBinario(z);
 
 }
 
@@ -165,7 +174,7 @@ void insereNaoCheioArvoreB(ArvB* arvore, int k){
         
         arvore->chave[i+1] = k; // insere a nova chave
         arvore->n = arvore->n+1; // estamos aumentando a quantidade de chaves presentes no nó;
-        escrita(arvore); // função em binário para escrever em binário a árvore atual
+        escritaBinario(arvore); // função em binário para escrever em binário a árvore atual
     }else{ // se o nó NÃO for folha
         while(i >= 0 && k < arvore->chave[i]){ // enquanto não chegar no começo e o número inserido for menor que a chave atual
             i--;
@@ -173,7 +182,7 @@ void insereNaoCheioArvoreB(ArvB* arvore, int k){
         }
 
         i++; // corrige o valor do "i" após a iteração
-        leitura(arvore->filho[i]); // função para ler, em binário, o filho do nó
+        lerBinario(arvore->filho[i]); // função para ler, em binário, o filho do nó
 
         if(arvore->filho[i]->n == 2*t-1){ // se a quantidade de chaves do nó for igual a 2t-1, ou seja, verifica se o nó filho está cheio
             splitChildrenArvoreB(arvore, i); // se está cheio, faz a divisão do nó (split)
