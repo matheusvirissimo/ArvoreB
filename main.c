@@ -4,14 +4,13 @@
 #include <string.h>
 #include <time.h>
 
-#define MAX 10
-#define t 2 // o "t" é dinâmico. Por enquanto só testes. "T" é um valor de controle para quantidades de chaves
+int t; // o t vai ser definido de forma dinâmica
 
 typedef struct no{
     int n; // quantidade de chaves
-    int chave[MAX]; // números contidos na chaves
+    int *chave; // números contidos na chaves (ponteiro porque é dinâmico)
     bool folha; // se é folha
-    struct no *filho[MAX+1]; // apontando para o próximo
+    struct no **filho; // apontando para os filhos (ponteiro de ponteiro)
     char name[20];
 } ArvB;
 
@@ -90,6 +89,8 @@ ArvB* criarNoArvoreB(ArvB** raiz){
     ArvB* x = (ArvB*) malloc(sizeof(ArvB)); // aloca no 
     x->folha = true; // o nó é folha
     x->n = 0; // inicia sem nenhuma chave
+    x->chave = (int*) malloc((2*t-1) *sizeof(int)); // aloca memória para as chaves
+    x->filho = (ArvB*) malloc((2*t-1) *sizeof(ArvB)); // aloca memória para os filhos
     strcpy(x->name, gerarNomeBinarioAleatorio()); // gera um novo nome para o nó
     escreverBinario(x); // escreve no disco binário
     *raiz = x; // o novo nó vai ser a raiz
@@ -211,4 +212,61 @@ void insereArvoreB(ArvB* arvore, int k){ // k é a chave a ser inserida
         insereNaoCheioArvoreB(arvore, k); // caso esteja vazio, insere direto na folha
     }
 
+}
+
+int main(){
+    srand(time(NULL)); // Função para inicializar os números aleatórios e um nome aleatório
+
+    printf("Digite o valor de 't' (grau mínimo da árvore B, t >= 2): "); // t >= 1
+    scanf("%d", &t);
+    while(t < 2){
+        printf("Valor inválido para 't'. Insira um valor maior ou igual a 2: ");
+        scanf("%d", &t);
+    }
+
+
+    // Criar a árvore B
+    ArvB* raiz = criarNoArvoreB(raiz);
+
+    int opcao, valor;
+
+    do{
+        printf("\nEscolha uma operação:\n");
+        printf("1. Inserir um valor\n");
+        printf("2. Buscar um valor\n");
+        printf("3. Remover um valor\n");
+        printf("4. Sair\n");
+        printf("Opção: ");
+        scanf("%d", &opcao);
+
+        switch(opcao){
+            case 1:
+                printf("Digite o valor a ser inserido: ");
+                scanf("%d", &valor);
+                insereArvoreB(raiz, valor);
+                printf("Valor inserido com sucesso!\n");
+                break;
+            case 2:
+                printf("Digite o valor a ser buscado: ");
+                scanf("%d", &valor);
+                if (buscaArvoreB(raiz, valor) != NULL) {
+                    printf("Valor %d encontrado na arvore!\n", valor);
+                } else {
+                    printf("Valor %d não encontrado na arvore.\n");
+                }
+                break;
+            case 3:
+                printf("Digite o valor a ser removido: ");
+                scanf("%d", &valor);
+                remocao(raiz, valor);
+                break;
+            case 4:
+                printf("Saindo...\n");
+                break;
+            default:
+                printf("Opção invalida!\n");
+        }
+    }while(opcao != 4);
+
+    return 0;
 }
