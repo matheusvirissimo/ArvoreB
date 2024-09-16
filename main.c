@@ -109,7 +109,7 @@ ArvB* buscaArvoreB(ArvB* arvore, int numeroBuscado){ // k é a chave que buscamo
 
     if(i < arvore->n && numeroBuscado == arvore->chave[i]){
         // se o numeroBuscado for igual o da chave
-        return arvore->chave[i]; // retornamos o valor da chave, pois encontramos o valor
+        return arvore; // retornamos A CHAVe, pois encontramos o valor
     }
 
     if(arvore->folha == true){ // chegamos ao fim da árvore
@@ -349,6 +349,39 @@ void mergeChildren(ArvB* arvore, int i) {
     escreverBinario(y); // escreve o nó que fez merge
 }
 
+// By Milani
+// Função para imprimir a árvore B diretamente do arquivo binário - feito no GPT
+void imprimeArvoreBBinario(ArvB* arvore, int nivel) {
+    if (arvore == NULL) return;
+
+    FILE *file = fopen(arvore->name, "rb");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo binario %s.\n", arvore->name);
+        return;
+    }
+
+    ArvB* no = (ArvB*) malloc(sizeof(ArvB));
+
+    while (fread(no, sizeof(ArvB), 1, file)) {
+        printf("Nível %d: ", nivel); // Imprime o nível atual
+
+        // Imprime todas as chaves do nó atual
+        for (int i = 0; i < no->n; i++) {
+            printf("| %d ", no->chave[i]);
+        }
+        printf("|\n");
+
+        if (!no->folha) {
+            for (int i = 0; i <= no->n; i++) {
+                imprimeArvoreBBinario(no->filho[i], nivel +1);
+            }
+        }
+    }
+
+    free(no);
+    fclose(file);
+}
+
 int main(){
     srand(time(NULL)); // Função para inicializar os números aleatórios e um nome aleatório
 
@@ -361,7 +394,7 @@ int main(){
 
 
     // Criar a árvore B
-    ArvB* raiz = criarNoArvoreB(raiz);
+    ArvB* raiz = criarNoArvoreB(&raiz);
 
     int opcao, valor;
 
@@ -399,10 +432,11 @@ int main(){
             case 4:
                 break;
             case 5:
+                imprimeArvoreBBinario(raiz, 1); // vai chamar recursivamente
                 printf("Saindo...\n");
                 break;
             default:
-                printf("Opção invalida!\n");
+                printf("Opcao invalida!\n");
         }
     }while(opcao != 5);
 
