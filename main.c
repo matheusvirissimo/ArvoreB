@@ -108,7 +108,7 @@ ArvB* criarNoArvoreB(ArvB** raiz){
     x->folha = true; // o nó é folha
     x->n = 0; // inicia sem nenhuma chave
     x->chave = (int*) malloc((2*t-1) *sizeof(int)); // aloca memória para as chaves
-    x->filho = (ArvB*) malloc((2*t-1) *sizeof(ArvB)); // aloca memória para os filhos
+    x->filho = (ArvB**) malloc((2*t-1) *sizeof(ArvB*)); // aloca memória para os filhos
     strcpy(x->name, gerarNomeBinarioAleatorio()); // gera um novo nome para o nó
     escreverBinario(x); // escreve no disco binário
     *raiz = x; // o novo nó vai ser a raiz
