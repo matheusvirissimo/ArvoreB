@@ -107,8 +107,8 @@ ArvB* criarNoArvoreB(ArvB** raiz){
     ArvB* x = (ArvB*) malloc(sizeof(ArvB)); // aloca no 
     x->folha = true; // o nó é folha
     x->n = 0; // inicia sem nenhuma chave
-    x->chave = (int*) malloc((2*t-1) *sizeof(int)); // aloca memória para as chaves
-    x->filho = (ArvB**) malloc((2*t-1) *sizeof(ArvB*)); // aloca memória para os filhos
+    x->chave = (int*) malloc((2*t-1) *sizeof(int)); // aloca memória para as chaves de forma dinâmica
+    x->filho = (ArvB**) malloc((2*t-1) *sizeof(ArvB*)); // aloca memória para os filhos de forma dinâmica
     strcpy(x->name, gerarNomeBinarioAleatorio()); // gera um novo nome para o nó
     escreverBinario(x); // escreve no disco binário
     *raiz = x; // o novo nó vai ser a raiz
@@ -147,6 +147,10 @@ void splitChildrenArvoreB(ArvB* arvore, int i){ // recebe como parâmetro o nó 
     z->folha = y->folha; // z vai receber de y se ele é folha (ou não)
 
     z->n = t - 1; // DEFINE A QUANTIDADE DE CHAVES PRESENTES NO NÓ. z terá t-1 chaves (metade das chaves de y)
+
+    // Aloca memória para as chaves e filhos em z
+    z->chave = (int*) malloc((2*t - 1) * sizeof(int));
+    z->filho = (ArvB**) malloc((2*t) * sizeof(ArvB*));
 
     for(int j = 0; j < t - 1; j++){ // copia as últimas t-1 chaves de y para z (agora os novos nós possuem a mesma quantidade de chaves)
         z->chave[j] = y->chave[j+t]; // atribui as últimas chaves de "y" a "z", separnado o nó "y"
@@ -193,7 +197,7 @@ void insereNaoCheioArvoreB(ArvB* arvore, int k){
         
         arvore->chave[i+1] = k; // insere a nova chave
         arvore->n = arvore->n+1; // estamos aumentando a quantidade de chaves presentes no nó;
-        escritaBinario(arvore); // função em binário para escrever em binário a árvore atual
+        escreverBinario(arvore); // função em binário para escrever em binário a árvore atual
     }else{ // se o nó NÃO for folha
         while(i >= 0 && k < arvore->chave[i]){ // enquanto não chegar no começo e o número inserido for menor que a chave atual
             i--;
@@ -224,6 +228,8 @@ void insereArvoreB(ArvB* arvore, int k){ // k é a chave a ser inserida
         s->folha = false; // o novo nó vai ser uma um nó raiz
         s->n = 0; // inicializa sem nenhuma chave
         s->filho[0] = arvore; // o filho de "s" vai ser a própria árvore original
+        s->chave = (int*) malloc((2 * t - 1) * sizeof(int)); // Aloca espaço para as chaves
+        s->filho = (ArvB**) malloc(2 * t * sizeof(ArvB*)); // Aloca espaço para os filhos
         splitChildrenArvoreB(s,0); // faz a divisão do nó raiz para poder inserir futuramente
         insereNaoCheioArvoreB(s, k); // insere a chave k no novo nó
     }else{
@@ -403,10 +409,10 @@ void imprimeArvoreBBinario(ArvB* arvore, int nivel) {
 int main(){
     srand(time(NULL)); // Função para inicializar os números aleatórios e um nome aleatório
 
-    printf("Digite o valor de 't' (grau mínimo da árvore B, t >= 2): "); // t >= 1
+    printf("Digite o valor de 't' (grau minimo da arvore B, t >= 2): "); // t >= 1
     scanf("%d", &t);
     while(t < 2){
-        printf("Valor inválido para 't'. Insira um valor maior ou igual a 2: ");
+        printf("Valor invalido para 't'. Insira um valor maior ou igual a 2: ");
         scanf("%d", &t);
     }
 
