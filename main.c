@@ -17,7 +17,7 @@ typedef struct no{
 // Funções binárias
 void escreverBinario(ArvB *arvore){
     FILE *file;
-    file = fopen(arvore->name, "wb");
+    file = fopen(arvore->name, "ab+"); // ou "ab"
     if(file == NULL){
         printf("O arquivo nao foi aberto ;(\n");
         return;
@@ -214,6 +214,141 @@ void insereArvoreB(ArvB* arvore, int k){ // k é a chave a ser inserida
 
 }
 
+// Remoção da árvore B by Milani
+
+void removerArvoreB(ArvB* arvore, int k){ // remover do nó a chave k
+    int i = 0;
+
+    // Encontrar o índice da chave no nó
+    while (i < arvore->n && arvore->chave[i] < k) { // faz a busca da chave
+        i++;
+    }
+
+    // Caso 1: A chave está em um nó folha (só remover)
+    if(arvore->folha == true){ // o nó é folha
+        if(i < arvore->n && arvore->chave[i] == k){ // percorre a chave para encontrar o valor
+            // Encontrou a chave
+            for(int j = i; j < arvore->n - 1; j++){ // faz arvore-n-1 porque estamos removendo um item
+                arvore->chave[j] = arvore->chave[j + 1]; // faz o deslocamento das chaves para a esquerda
+            }
+            arvore->n--; // a quantidade de chaves diminui
+            escreverBinario(arvore); // escreve o novo nó sem a chave
+            printf("Chave %d removida com sucesso.\n", k); 
+        }else{
+            printf("A chave %d nao foi encontrada na folha.\n", k);
+        }
+    }
+    // Caso 2: A chave está em um nó interno
+    else if(i < arvore->n && arvore->chave[i] == k){ // encontrou a chave para se remover
+        ArvB* y = arvore->filho[i];     // Filho à esquerda de k
+        ArvB* z = arvore->filho[i+1]; // Filho à direita de k
+
+        // Caso 2(a): O filho à esquerda tem pelo menos t chaves
+        if(y->n >= t){ // se a quantidade de chaves tiver o mínimo de chaves
+            int k_pred = y->chave[y->n-1]; // Predecessor é a chave mais à direita de y
+            arvore->chave[i] = k_pred;
+            removerArvoreB(y, k_pred);
+        }
+        // Caso 2(b): O filho à direita tem pelo menos t chaves
+        else if(z->n >= t){
+            int k_pred = z->chave[0]; // Sucessor é a chave mais à esquerda de z
+            arvore->chave[i] = k_pred;
+            removerArvoreB(z, k_pred);
+        }
+        // Caso 2(c): Ambos os filhos y e z têm t-1 chaves (Caso de fusão)
+        else{
+            // Mesclar y, z e k em y para que não fique abaixo do mínimo de chaves permitidas (t)
+            mergeChildren(arvore, i); // faz a junção dos nós
+            removerArvoreB(y, k); // Recursivamente excluir k do nó mesclado
+        }
+        escreverBinario(arvore); // reescreve o novo nó 
+    }
+    // Caso 3: A chave não está neste nó, deve estar em um filho
+    else{
+        ArvB* filho = arvore->filho[i]; // vamos fazer a busca no nó filho, então vamos "abri-lo"
+
+        // Caso 3(a): Se o filho tem apenas t-1 chaves, balanceamento necessário
+        if(filho->n == t - 1){
+            // Verificar irmão à esquerda
+            if (i > 0 && arvore->filho[i-1]->n >= t) {
+                ArvB* irmao_esq = arvore->filho[i-1];
+                // Mover chave do pai para o filho, chave do irmão para o pai
+                for (int j = filho->n; j > 0; j--) {
+                    filho->chave[j] = filho->chave[j-1]; // faz o deslocamento da direita para a esquerda
+                }
+                filho->chave[0] = arvore->chave[i-1]; // primeira chave vai receber uma anterior a removida
+                arvore->chave[i-1] = irmao_esq->chave[irmao_esq->n - 1]; // chave removida vai receber 
+                filho->n++; // aumenta a quantidade de filhos de chaves presentes no nó devido ao balanceamento
+                irmao_esq->n--; // perde a quantidade devido ao balanceamento
+            }
+            // Verificar irmão à direita (mesmo processo invertido)
+            else if (i < arvore->n && arvore->filho[i + 1]->n >= t) {
+                ArvB* irmao_dir = arvore->filho[i + 1];
+                // Mover chave do pai para o filho, chave do irmão para o pai
+                filho->chave[filho->n] = arvore->chave[i];
+                arvore->chave[i] = irmao_dir->chave[0];
+                for (int j = 0; j < irmao_dir->n - 1; j++) {
+                    irmao_dir->chave[j] = irmao_dir->chave[j + 1];
+                }
+                filho->n++;
+                irmao_dir->n--;
+            }
+            // Caso 3(b): Caso o irmão também tenha t-1 chaves, juntar os nós, pois estão abaixo do mínimo
+            else {
+                if(i < arvore->n){
+                    mergeChildren(arvore, i);
+                } else {
+                    mergeChildren(arvore, (i-1));
+                }
+            }
+        }
+        // Remoção recursiva no filho apropriado
+        removerArvoreB(filho, k);
+    }
+}
+
+
+// Mesma coisa que o split, mas ele ao invés de dividir, ele conecta
+void mergeChildren(ArvB* arvore, int i) {
+    ArvB* y = arvore->filho[i]; // nó da esquerda
+    ArvB* z = arvore->filho[i + 1]; // nó da direita
+
+    // Move a chave do nó atual para a mediana de y (esquerda)
+    y->chave[t-1] = arvore->chave[i];
+
+    // Move as chaves do filhos de z (direita) para y (esquerda que vai ser o nó final)
+    for(int j = 0; j < z->n; j++){ // enquanto for menor que a quantidade de chaves em z
+        y->chave[j+t] = z->chave[j]; // faz o deslocamento da esquerda para a direita
+    }
+
+    if(y->folha == false){ // se y NÃO for folha
+        for(int j = 0; j <= z->n; j++){
+            y->filho[j+t] = z->filho[j]; // faz o deslocamento agora dos filhos
+        }
+    }
+
+    y->n = 2*t-1; // vai receber a quantidade máxima de chaves disponíveis por nó
+
+    // Remove the key from the current node and shift keys and children
+    // Remove a chave do nó atual e faz o deslocamento dos filhos e chaves
+
+    for (int j = i; j < arvore->n - 1; j++) { // (arvore->n - 1) porque é da esquerda
+        arvore->chave[j] = arvore->chave[j + 1]; // desloca as chaves da direita para a esquerda
+    }
+    for (int j = i + 1; j < arvore->n; j++) {
+        arvore->filho[j] = arvore->filho[j + 1]; // desloca os filhos da direita para a esquerda
+    }
+
+    arvore->n--; // diminui a quantidade de chaves no nó
+
+    // dá um free em z, porque ele não vai mais ser usado
+    free(z);
+
+    // Escreve o novo nó
+    escreverBinario(arvore);
+    escreverBinario(y); // escreve o nó que fez merge
+}
+
 int main(){
     srand(time(NULL)); // Função para inicializar os números aleatórios e um nome aleatório
 
@@ -235,8 +370,9 @@ int main(){
         printf("1. Inserir um valor\n");
         printf("2. Buscar um valor\n");
         printf("3. Remover um valor\n");
-        printf("4. Sair\n");
-        printf("Opção: ");
+        printf("4. Imprimir arvore\n");
+        printf("5. Sair\n");
+        printf("Opcao: ");
         scanf("%d", &opcao);
 
         switch(opcao){
@@ -258,15 +394,17 @@ int main(){
             case 3:
                 printf("Digite o valor a ser removido: ");
                 scanf("%d", &valor);
-                remocao(raiz, valor);
+                removerArvoreB(raiz, valor);
                 break;
             case 4:
+                break;
+            case 5:
                 printf("Saindo...\n");
                 break;
             default:
                 printf("Opção invalida!\n");
         }
-    }while(opcao != 4);
+    }while(opcao != 5);
 
     return 0;
 }
