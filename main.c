@@ -27,7 +27,13 @@ void escreverBinario(ArvB *arvore){
     fwrite(&arvore->folha, sizeof(bool), 1, file); // escrever se é chave
     fwrite(&arvore->chave, sizeof(int), arvore->n, file); // escrever as chaves 
     fwrite(&arvore->name, sizeof(char), 20, file); // escrever o nome que o nó recebe. ele tem 20 porque são 20 caracteres 
-    // frwite(&arvore->filho, sizeof(ArvB), ?, file);
+    
+    // Devemos gravar todos os filhos, fazendo isso de forma recursiva
+    if(arvore->folha == false){
+        for(int i = 0; i <= arvore->n; i++){
+            escreverBinario(arvore->filho[i]);
+        }
+    }
 
     fclose(file);
 }
