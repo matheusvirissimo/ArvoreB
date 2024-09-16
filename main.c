@@ -10,8 +10,8 @@ typedef struct no{
     int n; // quantidade de chaves
     int *chave; // números contidos na chaves (ponteiro porque é dinâmico)
     bool folha; // se é folha
-    struct no **filho; // apontando para os filhos (ponteiro de ponteiro)
-    char name[20];
+    struct no **filho; // apontando para os filhos (ponteiro de ponteiro pois é um vetor dinâmico)
+    char name[20]; // armazena o nome do nó
 } ArvB;
 
 // Funções binárias
@@ -34,24 +34,36 @@ void escreverBinario(ArvB *arvore){
 
 void lerBinario(ArvB *arvore){
     FILE *file;
-    file = fopen(arvore->name, "rb");
+    file = fopen(arvore->name, "wb");
     if(file == NULL){
         printf("O arquivo nao foi aberto ;(\n");
         return;
     }
 
-    // mostrar o tamanho total do arquivo
-    fseek(file, 0, SEEK_END);
-    int tamArquivo = ftell(file)/sizeof(ArvB); 
-    rewind(file); // volta o ponteiro pro inicio
-
-    int quantidadeRegistrosLidos;
-    quantidadeRegistrosLidos = fread(arvore, sizeof(ArvB), tamArquivo, file);
-    printf("\nForam lidos %d nons na arvore\n", quantidadeRegistrosLidos);
+    
     fread(&arvore->n, sizeof(int), 1, file); // Lê a quantidade de chaves
     fread(&arvore->folha, sizeof(bool), 1, file); // Lê se é folha
-    fread(arvore->chave, sizeof(int), arvore->n, file); // Lê as chaves
     fread(arvore->name, sizeof(char), 20, file); // Lê o nome
+
+
+    // Como "chave" e "filho" é recursivo, recomenda-se alocar memória para realizar a leitura deles. Como C é eficiente, não ocupa espaço de memória.
+    arvore->chave = (int*) malloc(arvore->n *sizeof(int)); // quantidade de chaves presentes. Sem ler mais nem menos
+    fread(arvore->chave, sizeof(int), arvore->n, file); // Lê as chaves
+    
+    // Para gravar os filhos, deve-se fazer de forma recursiva
+    if(arvore->folha == false){
+
+        // Alocar memória para os ponteiros dos filhos
+        arvore->filho = (ArvB**) malloc((arvore->n+1) *sizeof(ArvB*)); // é ponteiro de ponteiro, por isso é diferente
+        
+        for(int i = 0; i <= arvore->n; i++){
+            // Alocar um espaço de memória para CADA filho
+            arvore->filho[i] = (ArvB*) malloc(sizeof(ArvB));
+
+            // Faz a recursão para ler o filho
+            lerBinario(arvore->filho[i]);
+        }
+    }
 
     fclose(file);
     return; 
